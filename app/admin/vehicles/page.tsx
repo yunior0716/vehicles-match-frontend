@@ -71,6 +71,8 @@ export default function VehiclesAdminPage() {
     e.preventDefault();
 
     try {
+      console.log('Form data being submitted:', formData);
+
       if (editingId) {
         await updateVehicle.mutateAsync({
           id: editingId,
@@ -91,16 +93,19 @@ export default function VehiclesAdminPage() {
         price: 0,
       });
     } catch (error) {
-      toast.error('Error al guardar el vehículo');
+      console.error('Error submitting form:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Error desconocido';
+      toast.error(`Error: ${errorMessage}`);
     }
   };
 
   const handleEdit = (vehicle: any) => {
     setFormData({
-      brand: vehicle.brand,
-      model: vehicle.model,
-      year: vehicle.year,
-      price: vehicle.price,
+      brand: vehicle.brand || '',
+      model: vehicle.model || '',
+      year: vehicle.year || new Date().getFullYear(),
+      price: vehicle.price || 0,
     });
     setEditingId(vehicle.id);
     setIsCreating(true);
@@ -250,13 +255,18 @@ export default function VehiclesAdminPage() {
                     type="number"
                     min="1900"
                     max="2030"
-                    value={formData.year}
-                    onChange={(e) =>
+                    value={String(formData.year || '')}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const numValue = value ? parseInt(value, 10) : null;
                       setFormData({
                         ...formData,
-                        year: parseInt(e.target.value),
-                      })
-                    }
+                        year:
+                          numValue && !isNaN(numValue)
+                            ? numValue
+                            : new Date().getFullYear(),
+                      });
+                    }}
                     required
                   />
                 </div>
@@ -267,13 +277,15 @@ export default function VehiclesAdminPage() {
                     type="number"
                     min="0"
                     step="0.01"
-                    value={formData.price}
-                    onChange={(e) =>
+                    value={String(formData.price || '')}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const numValue = value ? parseFloat(value) : null;
                       setFormData({
                         ...formData,
-                        price: parseFloat(e.target.value),
-                      })
-                    }
+                        price: numValue && !isNaN(numValue) ? numValue : 0,
+                      });
+                    }}
                     required
                     placeholder="ej. 25000"
                   />
@@ -387,9 +399,13 @@ export default function VehiclesAdminPage() {
             <div>
               <Label htmlFor="characteristic">Característica</Label>
               <Select
-                value={selectedCharacteristic?.toString() || ''}
+                value={
+                  selectedCharacteristic !== null
+                    ? selectedCharacteristic.toString()
+                    : ''
+                }
                 onValueChange={(value) =>
-                  setSelectedCharacteristic(parseInt(value))
+                  setSelectedCharacteristic(value ? parseInt(value) : null)
                 }
               >
                 <SelectTrigger>

@@ -15,7 +15,21 @@ export const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('API Error:', error.response?.data || error.message);
+    const errorMessage =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      error.message ||
+      'Error desconocido';
+
+    const errorDetails = {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      message: errorMessage,
+      url: error.config?.url,
+      method: error.config?.method?.toUpperCase(),
+    };
+
+    console.error('API Error:', errorDetails);
     return Promise.reject(error);
   }
 );

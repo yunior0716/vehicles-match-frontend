@@ -3,6 +3,7 @@ import type {
   ApiVehicle,
   ApiVehicleCharacteristic,
   CreateVehicleDto,
+  CreateVehicleCharacteristicDto,
   AssignCharacteristicToVehicleDto,
 } from '@/types/api';
 
@@ -14,7 +15,7 @@ export const vehicleService = {
   },
 
   // Obtener vehículo por ID
-  async getVehicleById(id: string): Promise<ApiVehicle> {
+  async getVehicleById(id: number): Promise<ApiVehicle> {
     const response = await apiClient.get(`/vehicles/${id}`);
     return response.data;
   },
@@ -27,7 +28,7 @@ export const vehicleService = {
 
   // Actualizar vehículo
   async updateVehicle(
-    id: string,
+    id: number,
     vehicle: Partial<CreateVehicleDto>
   ): Promise<ApiVehicle> {
     const response = await apiClient.patch(`/vehicles/${id}`, vehicle);
@@ -35,13 +36,13 @@ export const vehicleService = {
   },
 
   // Eliminar vehículo
-  async deleteVehicle(id: string): Promise<void> {
+  async deleteVehicle(id: number): Promise<void> {
     await apiClient.delete(`/vehicles/${id}`);
   },
 
   // Obtener características de un vehículo
   async getVehicleCharacteristics(
-    vehicleId: string
+    vehicleId: number
   ): Promise<ApiVehicleCharacteristic[]> {
     const response = await apiClient.get(
       `/vehicles/${vehicleId}/characteristics`
@@ -51,11 +52,22 @@ export const vehicleService = {
 
   // Asignar característica a vehículo
   async assignCharacteristicToVehicle(
-    vehicleId: string,
-    data: AssignCharacteristicToVehicleDto
+    data: CreateVehicleCharacteristicDto
   ): Promise<ApiVehicleCharacteristic> {
     const response = await apiClient.post(
-      `/vehicles/${vehicleId}/characteristics`,
+      `/vehicles/${data.vehicleId}/characteristics`,
+      data
+    );
+    return response.data;
+  },
+
+  // Actualizar característica de vehículo
+  async updateVehicleCharacteristic(
+    id: number,
+    data: Partial<CreateVehicleCharacteristicDto>
+  ): Promise<ApiVehicleCharacteristic> {
+    const response = await apiClient.patch(
+      `/vehicles/characteristics/${id}`,
       data
     );
     return response.data;
@@ -63,7 +75,7 @@ export const vehicleService = {
 
   // Remover característica de vehículo
   async removeCharacteristicFromVehicle(
-    characteristicId: string
+    characteristicId: number
   ): Promise<void> {
     await apiClient.delete(`/vehicles/characteristics/${characteristicId}`);
   },

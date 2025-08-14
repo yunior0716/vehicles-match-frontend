@@ -32,7 +32,14 @@ export function QuickVehicleForm({ onSuccess }: QuickVehicleFormProps) {
     brand: '',
     model: '',
     year: new Date().getFullYear(),
+    fuel: 'gasoline',
+    transmission: 'manual',
+    seats: 5,
+    doors: 4,
+    carrocery: 'sedan',
     price: 0,
+    image: '',
+    description: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,7 +52,14 @@ export function QuickVehicleForm({ onSuccess }: QuickVehicleFormProps) {
         brand: '',
         model: '',
         year: new Date().getFullYear(),
+        fuel: 'gasoline',
+        transmission: 'manual',
+        seats: 5,
+        doors: 4,
+        carrocery: 'sedan',
         price: 0,
+        image: '',
+        description: '',
       });
       onSuccess?.();
     } catch (error) {

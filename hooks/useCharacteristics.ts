@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { characteristicService } from '@/services/characteristicService';
-import type { CreateCharacteristicDto } from '@/types/api';
+import type { ApiCharacteristic, CreateCharacteristicDto } from '@/types/api';
 
 // Query keys para características
 export const characteristicKeys = {
@@ -33,8 +33,8 @@ export const useCharacteristic = (id: number) => {
 export const useCreateCharacteristic = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (characteristic: CreateCharacteristicDto) =>
+  return useMutation<ApiCharacteristic, Error, CreateCharacteristicDto>({
+    mutationFn: (characteristic) =>
       characteristicService.createCharacteristic(characteristic),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: characteristicKeys.lists() });
@@ -46,14 +46,13 @@ export const useCreateCharacteristic = () => {
 export const useUpdateCharacteristic = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({
-      id,
-      characteristic,
-    }: {
-      id: number;
-      characteristic: Partial<CreateCharacteristicDto>;
-    }) => characteristicService.updateCharacteristic(id, characteristic),
+  return useMutation<
+    ApiCharacteristic,
+    Error,
+    { id: number; characteristic: Partial<CreateCharacteristicDto> }
+  >({
+    mutationFn: ({ id, characteristic }) =>
+      characteristicService.updateCharacteristic(id, characteristic),
     onSuccess: (data, { id }) => {
       queryClient.invalidateQueries({
         queryKey: characteristicKeys.detail(id),
@@ -67,8 +66,8 @@ export const useUpdateCharacteristic = () => {
 export const useDeleteCharacteristic = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (id: number) => characteristicService.deleteCharacteristic(id),
+  return useMutation<void, Error, number>({
+    mutationFn: (id) => characteristicService.deleteCharacteristic(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: characteristicKeys.lists() });
     },

@@ -38,7 +38,7 @@ export default function VehicleDetailPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Cargar vehículo y características desde la API
-  const vehicleId = params.id as string;
+  const vehicleId = parseInt(params.id as string, 10);
   const {
     data: apiVehicle,
     isLoading: vehicleLoading,

@@ -1,7 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { vehicleService } from '@/services/vehicleService';
 import type {
+  ApiVehicle,
+  ApiVehicleCharacteristic,
   CreateVehicleDto,
+  CreateVehicleCharacteristicDto,
   AssignCharacteristicToVehicleDto,
 } from '@/types/api';
 
@@ -11,8 +14,8 @@ export const vehicleKeys = {
   lists: () => [...vehicleKeys.all, 'list'] as const,
   list: (filters: string) => [...vehicleKeys.lists(), { filters }] as const,
   details: () => [...vehicleKeys.all, 'detail'] as const,
-  detail: (id: string) => [...vehicleKeys.details(), id] as const,
-  characteristics: (id: string) =>
+  detail: (id: number) => [...vehicleKeys.details(), id] as const,
+  characteristics: (id: number) =>
     [...vehicleKeys.detail(id), 'characteristics'] as const,
 };
 
@@ -25,7 +28,7 @@ export const useVehicles = () => {
 };
 
 // Hook para obtener un vehículo por ID
-export const useVehicle = (id: string) => {
+export const useVehicle = (id: number) => {
   return useQuery({
     queryKey: vehicleKeys.detail(id),
     queryFn: () => vehicleService.getVehicleById(id),
@@ -34,7 +37,7 @@ export const useVehicle = (id: string) => {
 };
 
 // Hook para obtener características de un vehículo
-export const useVehicleCharacteristics = (vehicleId: string) => {
+export const useVehicleCharacteristics = (vehicleId: number) => {
   return useQuery({
     queryKey: vehicleKeys.characteristics(vehicleId),
     queryFn: () => vehicleService.getVehicleCharacteristics(vehicleId),
@@ -46,9 +49,8 @@ export const useVehicleCharacteristics = (vehicleId: string) => {
 export const useCreateVehicle = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (vehicle: CreateVehicleDto) =>
-      vehicleService.createVehicle(vehicle),
+  return useMutation<ApiVehicle, Error, CreateVehicleDto>({
+    mutationFn: (vehicle) => vehicleService.createVehicle(vehicle),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: vehicleKeys.lists() });
     },
@@ -59,14 +61,12 @@ export const useCreateVehicle = () => {
 export const useUpdateVehicle = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({
-      id,
-      vehicle,
-    }: {
-      id: string;
-      vehicle: Partial<CreateVehicleDto>;
-    }) => vehicleService.updateVehicle(id, vehicle),
+  return useMutation<
+    ApiVehicle,
+    Error,
+    { id: number; vehicle: Partial<CreateVehicleDto> }
+  >({
+    mutationFn: ({ id, vehicle }) => vehicleService.updateVehicle(id, vehicle),
     onSuccess: (data, { id }) => {
       queryClient.invalidateQueries({ queryKey: vehicleKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: vehicleKeys.lists() });
@@ -78,8 +78,8 @@ export const useUpdateVehicle = () => {
 export const useDeleteVehicle = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (id: string) => vehicleService.deleteVehicle(id),
+  return useMutation<void, Error, number>({
+    mutationFn: (id) => vehicleService.deleteVehicle(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: vehicleKeys.lists() });
     },
@@ -90,18 +90,33 @@ export const useDeleteVehicle = () => {
 export const useAssignCharacteristicToVehicle = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({
-      vehicleId,
-      data,
-    }: {
-      vehicleId: string;
-      data: AssignCharacteristicToVehicleDto;
-    }) => vehicleService.assignCharacteristicToVehicle(vehicleId, data),
-    onSuccess: (_, { vehicleId }) => {
+  return useMutation<
+    ApiVehicleCharacteristic,
+    Error,
+    CreateVehicleCharacteristicDto
+  >({
+    mutationFn: (data) => vehicleService.assignCharacteristicToVehicle(data),
+    onSuccess: (_, data) => {
       queryClient.invalidateQueries({
-        queryKey: vehicleKeys.characteristics(vehicleId),
+        queryKey: vehicleKeys.characteristics(data.vehicleId),
       });
+    },
+  });
+};
+
+// Hook para actualizar característica de vehículo
+export const useUpdateVehicleCharacteristic = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    ApiVehicleCharacteristic,
+    Error,
+    { id: number; data: Partial<CreateVehicleCharacteristicDto> }
+  >({
+    mutationFn: ({ id, data }) =>
+      vehicleService.updateVehicleCharacteristic(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: vehicleKeys.all });
     },
   });
 };
@@ -110,8 +125,8 @@ export const useAssignCharacteristicToVehicle = () => {
 export const useRemoveCharacteristicFromVehicle = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (characteristicId: string) =>
+  return useMutation<void, Error, number>({
+    mutationFn: (characteristicId) =>
       vehicleService.removeCharacteristicFromVehicle(characteristicId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: vehicleKeys.all });

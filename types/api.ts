@@ -1,27 +1,34 @@
 // Tipos para la API basados en la documentación
 export interface ApiVehicle {
-  id: string;
+  id: number;
   brand: string;
   model: string;
   year: number;
+  fuel: string;
+  transmission: string;
+  seats: number;
+  doors: number;
+  carrocery: string;
   price: number;
-  created_at?: string;
-  updated_at?: string;
+  image: string;
+  description: string;
+  vehicleCharacteristics?: ApiVehicleCharacteristic[];
 }
 
 export interface ApiCharacteristic {
   id: number;
   name: string;
-  data_type: 'number' | 'text' | 'boolean' | 'select';
+  data_type: 'text' | 'number' | 'decimal' | 'boolean' | 'date';
   unit?: string;
   description?: string;
 }
 
 export interface ApiVehicleCharacteristic {
-  id: string;
-  vehicle_id: string;
-  characteristic_id: number;
+  id: number;
+  vehicleId: number;
+  characteristicId: number;
   value: string;
+  vehicle?: ApiVehicle;
   characteristic?: ApiCharacteristic;
 }
 
@@ -29,17 +36,18 @@ export interface ApiFilter {
   id: string;
   name: string;
   description?: string;
-  created_at?: string;
-  updated_at?: string;
+  createdAt?: string;
+  filterCharacteristics?: ApiFilterCharacteristic[];
 }
 
 export interface ApiFilterCharacteristic {
   id: string;
-  filter_id: string;
-  characteristic_id: number;
-  min_value?: string;
-  max_value?: string;
-  exact_value?: string;
+  filterId: string;
+  characteristicId: number;
+  minValue?: string;
+  maxValue?: string;
+  exactValue?: string;
+  filter?: ApiFilter;
   characteristic?: ApiCharacteristic;
 }
 
@@ -48,12 +56,19 @@ export interface CreateVehicleDto {
   brand: string;
   model: string;
   year: number;
+  fuel: string;
+  transmission: string;
+  seats: number;
+  doors: number;
+  carrocery: string;
   price: number;
+  image: string;
+  description: string;
 }
 
 export interface CreateCharacteristicDto {
   name: string;
-  data_type: 'number' | 'text' | 'boolean' | 'select';
+  data_type: 'text' | 'number' | 'decimal' | 'boolean' | 'date';
   unit?: string;
   description?: string;
 }
@@ -61,8 +76,32 @@ export interface CreateCharacteristicDto {
 export interface CreateFilterDto {
   name: string;
   description?: string;
+  characteristics?: CreateFilterCharacteristicDto[];
 }
 
+export interface CreateFilterCharacteristicDto {
+  characteristicId: number;
+  minValue?: string;
+  maxValue?: string;
+  exactValue?: string;
+}
+
+export interface CreateVehicleCharacteristicDto {
+  vehicleId: number;
+  characteristicId: number;
+  value: string;
+}
+
+export interface UpdateVehicleDto extends Partial<CreateVehicleDto> {}
+export interface UpdateCharacteristicDto
+  extends Partial<CreateCharacteristicDto> {}
+export interface UpdateFilterDto extends Partial<CreateFilterDto> {}
+export interface UpdateVehicleCharacteristicDto
+  extends Partial<CreateVehicleCharacteristicDto> {}
+export interface UpdateFilterCharacteristicDto
+  extends Partial<CreateFilterCharacteristicDto> {}
+
+// Tipos para asignar características (compatibilidad)
 export interface AssignCharacteristicToVehicleDto {
   characteristicId: number;
   value: string;
