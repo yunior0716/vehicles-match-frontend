@@ -27,6 +27,15 @@ export const useVehicles = () => {
   });
 };
 
+// Hook para obtener vehículos filtrados
+export const useVehiclesByFilters = (filterIds: string[]) => {
+  return useQuery({
+    queryKey: vehicleKeys.list(filterIds.join(',')),
+    queryFn: () => vehicleService.getVehiclesByFilters(filterIds),
+    enabled: filterIds.length > 0,
+  });
+};
+
 // Hook para obtener un vehículo por ID
 export const useVehicle = (id: number) => {
   return useQuery({

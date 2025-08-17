@@ -14,6 +14,15 @@ export const vehicleService = {
     return response.data;
   },
 
+  // Obtener vehículos filtrados por filtros
+  async getVehiclesByFilters(filterIds: string[]): Promise<ApiVehicle[]> {
+    const filters = filterIds.join(',');
+    const response = await apiClient.get(
+      `/vehicles/filtered?filters=${filters}`
+    );
+    return response.data;
+  },
+
   // Obtener vehículo por ID
   async getVehicleById(id: number): Promise<ApiVehicle> {
     const response = await apiClient.get(`/vehicles/${id}`);

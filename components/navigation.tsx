@@ -26,21 +26,20 @@ export function Navigation() {
 
   const navItems = [
     { href: '/', label: 'Inicio', icon: Home },
-    { href: '/create-vehicle', label: 'Crear Vehículo', icon: Car },
     { href: '/filters', label: 'Filtros', icon: Filter },
     { href: '/results', label: 'Resultados', icon: List },
     { href: '/favorites', label: 'Favoritos', icon: Heart },
   ];
 
   const adminItems = [
-    { href: '/admin', label: 'Estado API', icon: Database },
+    { href: '/admin', label: 'Administración', icon: Database },
     { href: '/admin/vehicles', label: 'Vehículos', icon: Car },
     {
       href: '/admin/characteristics',
       label: 'Características',
       icon: Database,
     },
-    { href: '/admin/filters', label: 'Filtros Guardados', icon: Filter },
+    { href: '/admin/filters', label: 'Filtros', icon: Filter },
   ];
 
   return (

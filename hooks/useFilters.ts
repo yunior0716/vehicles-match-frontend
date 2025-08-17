@@ -14,8 +14,8 @@ export const filterKeys = {
   lists: () => [...filterKeys.all, 'list'] as const,
   list: (filters: string) => [...filterKeys.lists(), { filters }] as const,
   details: () => [...filterKeys.all, 'detail'] as const,
-  detail: (id: number) => [...filterKeys.details(), id] as const,
-  characteristics: (id: number) =>
+  detail: (id: string) => [...filterKeys.details(), id] as const,
+  characteristics: (id: string) =>
     [...filterKeys.detail(id), 'characteristics'] as const,
 };
 
@@ -28,7 +28,7 @@ export const useFilters = () => {
 };
 
 // Hook para obtener un filtro por ID
-export const useFilter = (id: number) => {
+export const useFilter = (id: string) => {
   return useQuery({
     queryKey: filterKeys.detail(id),
     queryFn: () => filterService.getFilterById(id),
@@ -37,7 +37,7 @@ export const useFilter = (id: number) => {
 };
 
 // Hook para obtener características de un filtro
-export const useFilterCharacteristics = (filterId: number) => {
+export const useFilterCharacteristics = (filterId: string) => {
   return useQuery({
     queryKey: filterKeys.characteristics(filterId),
     queryFn: () => filterService.getFilterCharacteristics(filterId),
@@ -64,7 +64,7 @@ export const useUpdateFilter = () => {
   return useMutation<
     ApiFilter,
     Error,
-    { id: number; filter: Partial<CreateFilterDto> }
+    { id: string; filter: Partial<CreateFilterDto> }
   >({
     mutationFn: ({ id, filter }) => filterService.updateFilter(id, filter),
     onSuccess: (data, { id }) => {
@@ -78,7 +78,7 @@ export const useUpdateFilter = () => {
 export const useDeleteFilter = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, number>({
+  return useMutation<void, Error, string>({
     mutationFn: (id) => filterService.deleteFilter(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: filterKeys.lists() });
@@ -93,7 +93,7 @@ export const useAddCharacteristicToFilter = () => {
   return useMutation<
     ApiFilterCharacteristic,
     Error,
-    { filterId: number; data: AssignCharacteristicToFilterDto }
+    { filterId: string; data: AssignCharacteristicToFilterDto }
   >({
     mutationFn: ({ filterId, data }) =>
       filterService.addCharacteristicToFilter(filterId, data),
@@ -109,7 +109,7 @@ export const useAddCharacteristicToFilter = () => {
 export const useRemoveCharacteristicFromFilter = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, number>({
+  return useMutation<void, Error, string>({
     mutationFn: (characteristicId) =>
       filterService.removeCharacteristicFromFilter(characteristicId),
     onSuccess: () => {

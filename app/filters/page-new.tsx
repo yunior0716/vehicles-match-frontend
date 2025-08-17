@@ -28,26 +28,12 @@ export default function FiltersPage() {
     }));
   };
 
-  const getDefaultValue = (characteristic: any) => {
-    if (
-      characteristic.data_type === 'boolean' ||
-      characteristic.data_type === 'select'
-    ) {
-      return 'any';
-    }
-    return '';
-  };
-
   const handleSearch = () => {
+    // Convertir filtros a query params y navegar a resultados
     const queryParams = new URLSearchParams();
 
     Object.entries(filters).forEach(([characteristicId, value]) => {
-      if (
-        value !== null &&
-        value !== undefined &&
-        value !== '' &&
-        value !== 'any'
-      ) {
+      if (value !== null && value !== undefined && value !== '') {
         queryParams.append(`char_${characteristicId}`, value.toString());
       }
     });
@@ -56,11 +42,7 @@ export default function FiltersPage() {
   };
 
   const handleReset = () => {
-    const resetFilters: Record<string, any> = {};
-    characteristics?.forEach((characteristic) => {
-      resetFilters[characteristic.id] = getDefaultValue(characteristic);
-    });
-    setFilters(resetFilters);
+    setFilters({});
   };
 
   if (isLoading) {
@@ -100,10 +82,7 @@ export default function FiltersPage() {
               <CardContent>
                 <CharacteristicFilter
                   characteristic={characteristic}
-                  value={
-                    filters[characteristic.id] ||
-                    getDefaultValue(characteristic)
-                  }
+                  value={filters[characteristic.id] || ''}
                   onChange={(value) =>
                     handleFilterChange(characteristic.id, value)
                   }
@@ -172,8 +151,8 @@ function CharacteristicFilter({
                 placeholder={`Ej: 100${
                   characteristic.unit ? ` ${characteristic.unit}` : ''
                 }`}
-                value={value === 'any' ? '' : value}
-                onChange={(e) => onChange(e.target.value || 'any')}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
               />
             </div>
           </div>
@@ -186,61 +165,19 @@ function CharacteristicFilter({
               <SelectValue placeholder="Seleccionar..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="any">Cualquiera</SelectItem>
+              <SelectItem value="">Cualquiera</SelectItem>
               <SelectItem value="true">Sí</SelectItem>
               <SelectItem value="false">No</SelectItem>
             </SelectContent>
           </Select>
         );
 
-      case 'select':
-        const getSelectOptions = () => {
-          switch (characteristic.name) {
-            case 'Tipo de combustible':
-              return ['Gasolina', 'Diesel', 'Eléctrico', 'Híbrido'];
-            case 'Tipo de transmisión':
-              return ['Manual', 'Automática'];
-            case 'Tracción':
-              return ['FWD', 'RWD', 'AWD'];
-            default:
-              return [];
-          }
-        };
-
-        const options = getSelectOptions();
-
-        if (options.length > 0) {
-          return (
-            <Select value={value} onValueChange={onChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">Cualquiera</SelectItem>
-                {options.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          );
-        }
-
-        return (
-          <Input
-            placeholder={`Valor de ${characteristic.name.toLowerCase()}`}
-            value={value === 'any' ? '' : value}
-            onChange={(e) => onChange(e.target.value || 'any')}
-          />
-        );
-
       case 'text':
         return (
           <Input
             placeholder={`Buscar por ${characteristic.name.toLowerCase()}`}
-            value={value === 'any' ? '' : value}
-            onChange={(e) => onChange(e.target.value || 'any')}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
           />
         );
 
@@ -248,8 +185,8 @@ function CharacteristicFilter({
         return (
           <Input
             type="date"
-            value={value === 'any' ? '' : value}
-            onChange={(e) => onChange(e.target.value || 'any')}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
           />
         );
 
@@ -257,8 +194,8 @@ function CharacteristicFilter({
         return (
           <Input
             placeholder={`Valor de ${characteristic.name.toLowerCase()}`}
-            value={value === 'any' ? '' : value}
-            onChange={(e) => onChange(e.target.value || 'any')}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
           />
         );
     }

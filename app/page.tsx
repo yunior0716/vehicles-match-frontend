@@ -34,94 +34,19 @@ export default function HomePage() {
               técnicas y encuentra exactamente lo que necesitas.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
-              <Link href="/create-vehicle">
+              <Link href="/filters">
                 <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
-                  <Car className="mr-2 h-4 w-4" />
-                  Crear Vehículo
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filtro Avanzado
                 </Button>
               </Link>
-              <Link href="/filters">
+              <Link href="/results">
                 <Button variant="outline" size="lg">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Buscar Vehículos
+                  <Car className="mr-2 h-4 w-4" />
+                  Catálogo de Vehículos
                 </Button>
               </Link>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              ¿Por qué elegir nuestra plataforma?
-            </h2>
-            <p className="text-lg text-gray-600">
-              Tecnología avanzada para encontrar el vehículo perfecto
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="text-center">
-              <CardHeader>
-                <div className="mx-auto w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                  <Filter className="h-6 w-6 text-blue-600" />
-                </div>
-                <CardTitle className="text-xl">Filtros Avanzados</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  7 categorías técnicas con múltiples parámetros para una
-                  búsqueda precisa
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <div className="mx-auto w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                  <Zap className="h-6 w-6 text-green-600" />
-                </div>
-                <CardTitle className="text-xl">Recomendaciones IA</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Algoritmos inteligentes que aprenden de tus preferencias
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <div className="mx-auto w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                  <Heart className="h-6 w-6 text-purple-600" />
-                </div>
-                <CardTitle className="text-xl">Lista de Favoritos</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Guarda y compara tus vehículos favoritos fácilmente
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <div className="mx-auto w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
-                  <Car className="h-6 w-6 text-orange-600" />
-                </div>
-                <CardTitle className="text-xl">
-                  Base de Datos Completa
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Miles de vehículos con especificaciones técnicas detalladas
-                </CardDescription>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </section>
@@ -180,7 +105,7 @@ export default function HomePage() {
                 <div className="mx-auto bg-purple-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
                   <Database className="h-6 w-6 text-purple-600" />
                 </div>
-                <CardTitle>Estado de la API</CardTitle>
+                <CardTitle>Panel de Control</CardTitle>
                 <CardDescription>
                   Verificar conexión y configuración del sistema
                 </CardDescription>

@@ -30,11 +30,12 @@ import {
 import { useVehicle, useVehicleCharacteristics } from '@/hooks/useVehicles';
 import { adaptApiVehicleToVehicle } from '@/lib/adapters';
 import { useFavorites } from '@/contexts/favorites-context';
+import { toast } from '@/hooks/use-toast';
 
 export default function VehicleDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
+  const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Cargar vehículo y características desde la API
@@ -79,84 +80,58 @@ export default function VehicleDetailPage() {
     );
   }
 
-  const isFavorite = favorites.includes(vehicle.id);
+  const isInFavorites = isFavorite(vehicle.id);
 
   const handleFavoriteToggle = () => {
-    if (isFavorite) {
+    if (isInFavorites) {
       removeFromFavorites(vehicle.id);
+      toast({
+        title: 'Eliminado de favoritos',
+        description: `${vehicle.brand} ${vehicle.model} eliminado de tus favoritos`,
+      });
     } else {
       addToFavorites(vehicle.id);
+      toast({
+        title: 'Agregado a favoritos',
+        description: `${vehicle.brand} ${vehicle.model} agregado a tus favoritos`,
+      });
     }
   };
 
-  const specCategories = [
-    {
-      key: 'performance',
-      title: 'Desempeño',
-      icon: Gauge,
-      specs: [
-        { label: 'Potencia', value: `${vehicle.specs.performance.power} HP` },
-        {
-          label: 'Aceleración 0-100',
-          value: `${vehicle.specs.performance.acceleration}s`,
-        },
-        {
-          label: 'Velocidad máxima',
-          value: `${vehicle.specs.performance.topSpeed} km/h`,
-        },
-        { label: 'Transmisión', value: vehicle.specs.performance.transmission },
-      ],
-    },
-    {
-      key: 'consumption',
-      title: 'Consumo',
-      icon: Fuel,
-      specs: [
-        {
-          label: 'Consumo',
-          value: `${vehicle.specs.consumption.fuelConsumption} L/100km`,
-        },
-        { label: 'Autonomía', value: `${vehicle.specs.consumption.range} km` },
-        {
-          label: 'Tipo de combustible',
-          value: vehicle.specs.consumption.fuelType,
-        },
-        {
-          label: 'Tanque',
-          value: `${vehicle.specs.consumption.tankCapacity}L`,
-        },
-      ],
-    },
-    {
-      key: 'dimensions',
-      title: 'Dimensiones',
-      icon: Ruler,
-      specs: [
-        { label: 'Longitud', value: `${vehicle.specs.dimensions.length} mm` },
-        { label: 'Ancho', value: `${vehicle.specs.dimensions.width} mm` },
-        { label: 'Alto', value: `${vehicle.specs.dimensions.height} mm` },
-        { label: 'Peso', value: `${vehicle.specs.dimensions.weight} kg` },
-        { label: 'Asientos', value: vehicle.specs.dimensions.seats.toString() },
-      ],
-    },
-    {
-      key: 'safety',
-      title: 'Seguridad',
-      icon: Shield,
-      specs: [
-        { label: 'Airbags', value: vehicle.specs.safety.airbags ? 'Sí' : 'No' },
-        { label: 'ABS', value: vehicle.specs.safety.abs ? 'Sí' : 'No' },
-        {
-          label: 'Control de estabilidad',
-          value: vehicle.specs.safety.stabilityControl ? 'Sí' : 'No',
-        },
-        {
-          label: 'Puntuación seguridad',
-          value: `${vehicle.specs.safety.safetyRating}/5 estrellas`,
-        },
-      ],
-    },
-  ];
+  // Formatear las características del vehículo directamente sin categorizar
+  const getVehicleCharacteristics = () => {
+    if (!vehicleCharacteristics || vehicleCharacteristics.length === 0) {
+      return [];
+    }
+
+    return vehicleCharacteristics
+      .filter((vc) => vc.characteristic) // Solo características válidas
+      .map((vc) => {
+        const characteristic = vc.characteristic!; // Sabemos que existe por el filter
+
+        // Formatear el valor según el tipo de dato
+        let formattedValue = vc.value;
+
+        if (characteristic.data_type === 'boolean') {
+          formattedValue = vc.value === 'true' ? 'Sí' : 'No';
+        } else if (
+          characteristic.data_type === 'number' ||
+          characteristic.data_type === 'decimal'
+        ) {
+          formattedValue =
+            vc.value + (characteristic.unit ? ` ${characteristic.unit}` : '');
+        }
+
+        return {
+          label: characteristic.name,
+          value: formattedValue,
+          description: characteristic.description || '',
+          dataType: characteristic.data_type,
+        };
+      });
+  };
+
+  const vehicleSpecs = getVehicleCharacteristics();
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -176,13 +151,13 @@ export default function VehicleDetailPage() {
               <Share2 className="h-4 w-4" />
             </Button>
             <Button
-              variant={isFavorite ? 'default' : 'outline'}
+              variant={isInFavorites ? 'default' : 'outline'}
               size="sm"
               onClick={handleFavoriteToggle}
-              className={isFavorite ? 'bg-red-500 hover:bg-red-600' : ''}
+              className={isInFavorites ? 'bg-red-500 hover:bg-red-600' : ''}
             >
               <Heart
-                className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`}
+                className={`h-4 w-4 ${isInFavorites ? 'fill-current' : ''}`}
               />
             </Button>
           </div>
@@ -308,52 +283,63 @@ export default function VehicleDetailPage() {
         </div>
 
         {/* Detailed Specifications */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Especificaciones Técnicas</CardTitle>
-            <CardDescription>
-              Información detallada sobre las características del vehículo
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="performance" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                {specCategories.map((category) => {
-                  const Icon = category.icon;
-                  return (
-                    <TabsTrigger
-                      key={category.key}
-                      value={category.key}
-                      className="flex items-center space-x-2"
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span className="hidden sm:inline">{category.title}</span>
-                    </TabsTrigger>
-                  );
-                })}
-              </TabsList>
-              {specCategories.map((category) => (
-                <TabsContent
-                  key={category.key}
-                  value={category.key}
-                  className="mt-6"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {category.specs.map((spec, index) => (
-                      <div
-                        key={index}
-                        className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
-                      >
-                        <span className="text-gray-600">{spec.label}</span>
-                        <span className="font-semibold">{spec.value}</span>
-                      </div>
-                    ))}
+        {vehicleSpecs.length > 0 ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Características Técnicas</CardTitle>
+              <CardDescription>
+                Características específicas asignadas a este vehículo (
+                {vehicleSpecs.length} características)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {vehicleSpecs.map((spec, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col p-4 bg-gray-50 rounded-lg border hover:border-blue-200 transition-colors"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-sm font-medium text-gray-700">
+                        {spec.label}
+                      </span>
+                      <span className="text-lg font-bold text-blue-600">
+                        {spec.value}
+                      </span>
+                    </div>
+                    {spec.description && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {spec.description}
+                      </p>
+                    )}
                   </div>
-                </TabsContent>
-              ))}
-            </Tabs>
-          </CardContent>
-        </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>Características Técnicas</CardTitle>
+              <CardDescription>
+                No hay características específicas asignadas a este vehículo
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8 text-gray-500">
+                <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>
+                  Este vehículo no tiene características técnicas detalladas
+                  asignadas.
+                </p>
+                <p className="text-sm mt-2">
+                  Las características se pueden agregar desde el panel de
+                  administración.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

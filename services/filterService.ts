@@ -14,7 +14,7 @@ export const filterService = {
   },
 
   // Obtener filtro por ID
-  async getFilterById(id: number): Promise<ApiFilter> {
+  async getFilterById(id: string): Promise<ApiFilter> {
     const response = await apiClient.get(`/filters/${id}`);
     return response.data;
   },
@@ -27,7 +27,7 @@ export const filterService = {
 
   // Actualizar filtro
   async updateFilter(
-    id: number,
+    id: string,
     filter: Partial<CreateFilterDto>
   ): Promise<ApiFilter> {
     const response = await apiClient.patch(`/filters/${id}`, filter);
@@ -35,13 +35,13 @@ export const filterService = {
   },
 
   // Eliminar filtro
-  async deleteFilter(id: number): Promise<void> {
+  async deleteFilter(id: string): Promise<void> {
     await apiClient.delete(`/filters/${id}`);
   },
 
   // Obtener características de un filtro
   async getFilterCharacteristics(
-    filterId: number
+    filterId: string
   ): Promise<ApiFilterCharacteristic[]> {
     const response = await apiClient.get(
       `/filters/${filterId}/characteristics`
@@ -51,7 +51,7 @@ export const filterService = {
 
   // Agregar característica a filtro
   async addCharacteristicToFilter(
-    filterId: number,
+    filterId: string,
     data: AssignCharacteristicToFilterDto
   ): Promise<ApiFilterCharacteristic> {
     const response = await apiClient.post(
@@ -63,7 +63,7 @@ export const filterService = {
 
   // Remover característica de filtro
   async removeCharacteristicFromFilter(
-    characteristicId: number
+    characteristicId: string
   ): Promise<void> {
     await apiClient.delete(`/filters/characteristics/${characteristicId}`);
   },

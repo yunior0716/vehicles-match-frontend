@@ -7,6 +7,7 @@ import { FavoritesProvider } from '@/contexts/favorites-context';
 import { CharacteristicsProvider } from '@/contexts/characteristics-context';
 import { SavedFiltersProvider } from '@/contexts/saved-filters-context';
 import { QueryProvider } from '@/providers/QueryProvider';
+import { Toaster } from '@/components/ui/toaster';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,13 +23,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className={inter.className}>
+      <body className={inter.className} suppressHydrationWarning={true}>
         <QueryProvider>
           <CharacteristicsProvider>
             <SavedFiltersProvider>
               <FavoritesProvider>
                 <Navigation />
                 <main>{children}</main>
+                <Toaster />
               </FavoritesProvider>
             </SavedFiltersProvider>
           </CharacteristicsProvider>

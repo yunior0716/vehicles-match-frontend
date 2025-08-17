@@ -1,18 +1,42 @@
-"use client"
+'use client';
 
-import { useMemo } from "react"
-import { VehicleCard } from "@/components/vehicle-card"
-import { Button } from "@/components/ui/button"
-import { Heart, ShoppingCart } from 'lucide-react'
-import { vehicles } from "@/data/vehicles"
-import { useFavorites } from "@/contexts/favorites-context"
+import { useMemo } from 'react';
+import { VehicleCard } from '@/components/vehicle-card';
+import { Button } from '@/components/ui/button';
+import { Heart, ShoppingCart, Loader2 } from 'lucide-react';
+import { useFavorites } from '@/contexts/favorites-context';
+import { useVehicles } from '@/hooks/useVehicles';
+import { adaptApiVehicleToVehicle } from '@/lib/adapters';
 
 export default function FavoritesPage() {
-  const { favorites, clearFavorites } = useFavorites()
+  const { favorites, clearFavorites } = useFavorites();
+  const { data: apiVehicles, isLoading } = useVehicles();
 
   const favoriteVehicles = useMemo(() => {
-    return vehicles.filter(vehicle => favorites.includes(vehicle.id))
-  }, [favorites])
+    if (!apiVehicles) return [];
+
+    const adaptedVehicles = apiVehicles.map((apiVehicle) =>
+      adaptApiVehicleToVehicle(
+        apiVehicle,
+        apiVehicle.vehicleCharacteristics || []
+      )
+    );
+
+    return adaptedVehicles.filter((vehicle) => favorites.includes(vehicle.id));
+  }, [apiVehicles, favorites]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="container mx-auto px-4">
+          <div className="text-center py-16">
+            <Loader2 className="h-12 w-12 mx-auto animate-spin text-blue-600 mb-4" />
+            <p className="text-lg text-gray-600">Cargando favoritos...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (favorites.length === 0) {
     return (
@@ -26,21 +50,29 @@ export default function FavoritesPage() {
               No tienes favoritos aún
             </h1>
             <p className="text-lg text-gray-600 mb-8 max-w-md mx-auto">
-              Explora nuestro catálogo y marca los vehículos que más te interesen
+              Explora nuestro catálogo y marca los vehículos que más te
+              interesen
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" onClick={() => window.location.href = '/results'}>
+              <Button
+                size="lg"
+                onClick={() => (window.location.href = '/results')}
+              >
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Ver catálogo
               </Button>
-              <Button variant="outline" size="lg" onClick={() => window.location.href = '/filters'}>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => (window.location.href = '/filters')}
+              >
                 Buscar con filtros
               </Button>
             </div>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -53,7 +85,9 @@ export default function FavoritesPage() {
               Mis Favoritos
             </h1>
             <p className="text-lg text-gray-600">
-              {favoriteVehicles.length} vehículo{favoriteVehicles.length !== 1 ? 's' : ''} guardado{favoriteVehicles.length !== 1 ? 's' : ''}
+              {favoriteVehicles.length} vehículo
+              {favoriteVehicles.length !== 1 ? 's' : ''} guardado
+              {favoriteVehicles.length !== 1 ? 's' : ''}
             </p>
           </div>
           {favorites.length > 0 && (
@@ -84,10 +118,12 @@ export default function FavoritesPage() {
               Compara tus favoritos o busca más opciones
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg">
-                Comparar favoritos
-              </Button>
-              <Button variant="outline" size="lg" onClick={() => window.location.href = '/results'}>
+              <Button size="lg">Comparar favoritos</Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => (window.location.href = '/results')}
+              >
                 Seguir explorando
               </Button>
             </div>
@@ -95,5 +131,5 @@ export default function FavoritesPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
