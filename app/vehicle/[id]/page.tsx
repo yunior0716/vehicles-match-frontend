@@ -26,6 +26,8 @@ import {
   DollarSign,
   Ruler,
   Loader2,
+  Car,
+  Cog,
 } from 'lucide-react';
 import { useVehicle, useVehicleCharacteristics } from '@/hooks/useVehicles';
 import { adaptApiVehicleToVehicle } from '@/lib/adapters';
@@ -220,13 +222,16 @@ export default function VehicleDetailPage() {
                 </div>
               </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {vehicle.brand} {vehicle.model}
+                {vehicle.brand} {vehicle.model} {vehicle.year || ''}
               </h1>
               <p className="text-lg text-gray-600 mb-4">
                 {vehicle.description}
               </p>
               <div className="text-3xl font-bold text-blue-600 mb-4">
-                ${vehicle.specs.ownership.price.toLocaleString()}
+                $
+                {vehicle.price
+                  ? vehicle.price.toLocaleString()
+                  : 'Precio no disponible'}
               </div>
             </div>
 
@@ -234,20 +239,20 @@ export default function VehicleDetailPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white p-4 rounded-lg border">
                 <div className="flex items-center space-x-2 mb-1">
-                  <Gauge className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-500">Potencia</span>
+                  <Car className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm text-gray-500">Combustible</span>
                 </div>
                 <span className="font-semibold">
-                  {vehicle.specs.performance.power} HP
+                  {vehicle.fuel || 'No especificado'}
                 </span>
               </div>
               <div className="bg-white p-4 rounded-lg border">
                 <div className="flex items-center space-x-2 mb-1">
-                  <Fuel className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-500">Consumo</span>
+                  <Cog className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm text-gray-500">Transmisión</span>
                 </div>
                 <span className="font-semibold">
-                  {vehicle.specs.consumption.fuelConsumption} L/100km
+                  {vehicle.transmission || 'No especificado'}
                 </span>
               </div>
               <div className="bg-white p-4 rounded-lg border">
@@ -255,18 +260,14 @@ export default function VehicleDetailPage() {
                   <Users className="h-4 w-4 text-gray-500" />
                   <span className="text-sm text-gray-500">Asientos</span>
                 </div>
-                <span className="font-semibold">
-                  {vehicle.specs.dimensions.seats}
-                </span>
+                <span className="font-semibold">{vehicle.seats || 'N/A'}</span>
               </div>
               <div className="bg-white p-4 rounded-lg border">
                 <div className="flex items-center space-x-2 mb-1">
                   <Package className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-500">Maletero</span>
+                  <span className="text-sm text-gray-500">Puertas</span>
                 </div>
-                <span className="font-semibold">
-                  {vehicle.specs.utility.trunkCapacity}L
-                </span>
+                <span className="font-semibold">{vehicle.doors || 'N/A'}</span>
               </div>
             </div>
 

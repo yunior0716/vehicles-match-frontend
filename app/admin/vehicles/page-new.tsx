@@ -23,11 +23,22 @@ import {
 } from '@/hooks/useVehicles';
 import { useCharacteristics } from '@/hooks/useCharacteristics';
 import { toast } from '@/hooks/use-toast';
+import {
+  validateVehicleData,
+  sanitizeVehicleData,
+  getValidationErrorMessage,
+  cleanFormValue,
+  type ValidationError,
+} from '@/lib/validations';
 import { CURRENT_YEAR, MAX_YEAR } from '@/lib/constants';
+import { ValidationErrorDisplay } from '@/components/validation-error-display';
 
 export default function VehiclesAdminPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
+    []
+  );
   const [formData, setFormData] = useState({
     brand: '',
     model: '',
@@ -49,20 +60,30 @@ export default function VehiclesAdminPage() {
   const deleteVehicleMutation = useDeleteVehicle();
 
   const handleCreateVehicle = async () => {
-    if (!formData.brand.trim() || !formData.model.trim()) {
-      toast({
-        title: 'Error',
-        description: 'Marca y modelo son requeridos',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     try {
+      // Limpiar errores previos
+      setValidationErrors([]);
+
+      // Validar los datos antes de enviar
+      const validation = validateVehicleData(formData);
+
+      if (!validation.isValid) {
+        console.log(
+          'Errores de validación encontrados:',
+          validation.errors.map((e) => `${e.field}: ${e.message}`)
+        );
+        setValidationErrors(validation.errors);
+        return;
+      }
+
+      // Sanitizar los datos para asegurar tipos correctos
+      const sanitizedData = sanitizeVehicleData(formData);
+      console.log('Datos sanitizados:', sanitizedData);
+
       if (editingId) {
         await updateVehicleMutation.mutateAsync({
           id: editingId,
-          vehicle: formData,
+          vehicle: sanitizedData,
         });
         setEditingId(null);
         toast({
@@ -70,7 +91,7 @@ export default function VehiclesAdminPage() {
           description: 'Vehículo actualizado correctamente',
         });
       } else {
-        await createVehicleMutation.mutateAsync(formData);
+        await createVehicleMutation.mutateAsync(sanitizedData);
         setIsCreating(false);
         toast({
           title: 'Éxito',
@@ -80,9 +101,31 @@ export default function VehiclesAdminPage() {
 
       resetForm();
     } catch (error) {
+      console.error('Error completo al procesar vehículo:', error);
+
+      // Extraer mensaje de error más específico
+      let errorMessage = 'No se pudo procesar el vehículo';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null) {
+        if ('response' in error && error.response) {
+          const response = error.response as any;
+          if (response.data && response.data.message) {
+            errorMessage = Array.isArray(response.data.message)
+              ? response.data.message.join(', ')
+              : response.data.message;
+          } else if (response.status) {
+            errorMessage = `Error del servidor (${response.status})`;
+          }
+        } else if ('message' in error) {
+          errorMessage = String(error.message);
+        }
+      }
+
       toast({
         title: 'Error',
-        description: 'No se pudo procesar el vehículo',
+        description: errorMessage,
         variant: 'destructive',
       });
     }
@@ -139,6 +182,7 @@ export default function VehiclesAdminPage() {
       description: '',
     });
     setEditingId(null);
+    setValidationErrors([]); // Limpiar errores de validación
     setIsCreating(false);
   };
 
@@ -174,6 +218,10 @@ export default function VehiclesAdminPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <ValidationErrorDisplay
+              errors={validationErrors}
+              show={validationErrors.length > 0}
+            />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="brand">Marca *</Label>
@@ -202,9 +250,14 @@ export default function VehiclesAdminPage() {
                 <Input
                   id="year"
                   type="number"
-                  value={formData.year}
+                  value={formData.year || ''}
                   onChange={(e) =>
-                    setFormData({ ...formData, year: parseInt(e.target.value) })
+                    setFormData({
+                      ...formData,
+                      year:
+                        cleanFormValue(e.target.value, 'number') ||
+                        CURRENT_YEAR,
+                    })
                   }
                   min="1886"
                   max={MAX_YEAR}
@@ -215,11 +268,11 @@ export default function VehiclesAdminPage() {
                 <Input
                   id="price"
                   type="number"
-                  value={formData.price}
+                  value={formData.price || ''}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      price: parseInt(e.target.value),
+                      price: cleanFormValue(e.target.value, 'number'),
                     })
                   }
                   min="0"
@@ -267,11 +320,11 @@ export default function VehiclesAdminPage() {
                 <Input
                   id="seats"
                   type="number"
-                  value={formData.seats}
+                  value={formData.seats || ''}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      seats: parseInt(e.target.value),
+                      seats: cleanFormValue(e.target.value, 'number') || 5,
                     })
                   }
                   min="1"
@@ -283,11 +336,11 @@ export default function VehiclesAdminPage() {
                 <Input
                   id="doors"
                   type="number"
-                  value={formData.doors}
+                  value={formData.doors || ''}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      doors: parseInt(e.target.value),
+                      doors: cleanFormValue(e.target.value, 'number') || 4,
                     })
                   }
                   min="1"
@@ -350,15 +403,25 @@ export default function VehiclesAdminPage() {
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <CardTitle className="text-xl">
-                    {vehicle.brand} {vehicle.model} ({vehicle.year})
+                    {vehicle.brand} {vehicle.model}{' '}
+                    {vehicle.year ? `(${vehicle.year})` : ''}
                   </CardTitle>
                   <p className="text-gray-600 mt-1">{vehicle.description}</p>
                   <div className="flex gap-4 mt-2 text-sm text-gray-500">
-                    <span>Precio: ${vehicle.price.toLocaleString()}</span>
-                    <span>Combustible: {vehicle.fuel}</span>
-                    <span>Transmisión: {vehicle.transmission}</span>
-                    <span>{vehicle.seats} asientos</span>
-                    <span>{vehicle.doors} puertas</span>
+                    <span>
+                      Precio: $
+                      {vehicle.price
+                        ? vehicle.price.toLocaleString()
+                        : 'No disponible'}
+                    </span>
+                    <span>
+                      Combustible: {vehicle.fuel || 'No especificado'}
+                    </span>
+                    <span>
+                      Transmisión: {vehicle.transmission || 'No especificado'}
+                    </span>
+                    <span>{vehicle.seats || 'N/A'} asientos</span>
+                    <span>{vehicle.doors || 'N/A'} puertas</span>
                   </div>
                 </div>
                 <div className="flex gap-2">

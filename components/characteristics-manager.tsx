@@ -40,7 +40,6 @@ import { Plus, Loader2, Edit, Trash2 } from 'lucide-react';
 import {
   useCharacteristics,
   useCreateCharacteristic,
-  useDeleteCharacteristic,
 } from '@/hooks/useCharacteristics';
 import { toast } from 'sonner';
 import type { CreateCharacteristicDto } from '@/types/api';
@@ -48,7 +47,6 @@ import type { CreateCharacteristicDto } from '@/types/api';
 export function CharacteristicsManager() {
   const { data: characteristics, isLoading } = useCharacteristics();
   const createCharacteristic = useCreateCharacteristic();
-  const deleteCharacteristic = useDeleteCharacteristic();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState<CreateCharacteristicDto>({
     name: '',
@@ -81,18 +79,6 @@ export function CharacteristicsManager() {
     } catch (error) {
       toast.error('Error al crear la característica');
       console.error('Error:', error);
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (confirm('¿Estás seguro de que quieres eliminar esta característica?')) {
-      try {
-        await deleteCharacteristic.mutateAsync(id);
-        toast.success('Característica eliminada exitosamente');
-      } catch (error) {
-        toast.error('Error al eliminar la característica');
-        console.error('Error:', error);
-      }
     }
   };
 
@@ -271,14 +257,6 @@ export function CharacteristicsManager() {
                     <div className="flex gap-2 justify-end">
                       <Button variant="outline" size="sm">
                         <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(characteristic.id)}
-                        disabled={deleteCharacteristic.isPending}
-                      >
-                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>

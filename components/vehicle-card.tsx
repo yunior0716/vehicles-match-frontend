@@ -85,7 +85,7 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
         </div>
 
         <h3 className="font-semibold text-lg text-gray-900 mb-1">
-          {vehicle.brand} {vehicle.model}
+          {vehicle.brand} {vehicle.model} {vehicle.year || ''}
         </h3>
 
         <p className="text-sm text-gray-600 mb-3 line-clamp-2">
@@ -95,20 +95,23 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
         <div className="grid grid-cols-3 gap-2 mb-3 text-xs">
           <div className="flex items-center space-x-1 text-gray-500">
             <Gauge className="h-3 w-3" />
-            <span>{vehicle.specs.performance.power}HP</span>
+            <span>{vehicle.transmission}</span>
           </div>
           <div className="flex items-center space-x-1 text-gray-500">
             <Fuel className="h-3 w-3" />
-            <span>{vehicle.specs.consumption.fuelConsumption}L</span>
+            <span>{vehicle.fuel || 'No especificado'}</span>
           </div>
           <div className="flex items-center space-x-1 text-gray-500">
             <Users className="h-3 w-3" />
-            <span>{vehicle.specs.dimensions.seats}</span>
+            <span>{vehicle.seats || 'N/A'} asientos</span>
           </div>
         </div>
 
         <div className="text-xl font-bold text-blue-600">
-          ${vehicle.specs.ownership.price.toLocaleString()}
+          $
+          {vehicle.price
+            ? vehicle.price.toLocaleString()
+            : 'Precio no disponible'}
         </div>
       </CardContent>
 
